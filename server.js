@@ -20,7 +20,7 @@ const query = "SELECT * FROM users WHERE username = ? AND password = ?";
 
 db.get(query, [username, password], (err, row) => {
      if (row) {
-res.type("text/plain").send("Connexion réussie pour " + username);
+res.type("text/plain").send("Connexion réussie.");
          } else {
       res.send("Échec de la connexion.");
     }
@@ -30,7 +30,7 @@ res.type("text/plain").send("Connexion réussie pour " + username);
 // FAILLE 3 : Cross-Site Scripting (XSS)
 app.get('/search', (req, res) => {
   const q = req.query.q;
-  res.type("text/plain").send("Connexion réussie pour " + username);
+  res.type("text/plain").send("Résultats pour : " + q);
 });
 
 app.listen(3000, () => {
