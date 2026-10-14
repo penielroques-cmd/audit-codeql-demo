@@ -1,4 +1,5 @@
 const express = require('express');
+const { rateLimit } = require('express-rate-limit');
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
 app.use(express.json());
@@ -15,7 +16,16 @@ db.serialize(() => {
 });
 
 // FAILLE 2 : Injection SQL (pas de requête préparée)
-app.post('/login', (req, res) => {
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    erreur: "Trop de tentatives de connexion. Réessayez plus tard."
+  }
+});
+app.post('/login', loginLimiter, (req, res) => {
   const { username, password } = req.body || {};
 
   if (typeof username !== "string" || typeof password !== "string") {
