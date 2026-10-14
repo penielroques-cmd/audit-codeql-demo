@@ -16,11 +16,10 @@ db.serialize(() => {
 app.get('/login', (req, res) => {
   const username = req.query.username;
   const password = req.query.password;
+const query = "SELECT * FROM users WHERE username = ? AND password = ?";
 
-  const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
-  
-  db.get(query, [], (err, row) => {
-    if (row) {
+db.get(query, [username, password], (err, row) => {
+     if (row) {
       res.send("Connexion réussie pour " + username);
     } else {
       res.send("Échec de la connexion.");
