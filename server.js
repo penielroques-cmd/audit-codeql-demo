@@ -30,9 +30,10 @@ res.type("text/plain").send("Connexion réussie.");
 // FAILLE 3 : Cross-Site Scripting (XSS)
 app.get('/search', (req, res) => {
   const q = req.query.q;
-  res.type("text/plain").send("Résultats pour : " + q);
-});
 
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.json({ recherche: q });
+});
 app.listen(3000, () => {
   console.log('Serveur lancé sur http://localhost:3000');
 });
