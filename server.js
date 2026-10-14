@@ -1,6 +1,8 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // FAILLE 1 : Secret codé en dur (Hardcoded Credential)
 const ADMIN_API_KEY = "AKIAIOSFODNN7EXAMPLE12345!";
@@ -13,20 +15,27 @@ db.serialize(() => {
 });
 
 // FAILLE 2 : Injection SQL (pas de requête préparée)
-app.get('/login', (req, res) => {
-  const username = req.query.username;
-  const password = req.query.password;
-const query = "SELECT * FROM users WHERE username = ? AND password = ?";
+app.post('/login', (req, res) => {
+  const { username, password } = req.body || {};
 
-db.get(query, [username, password], (err, row) => {
-     if (row) {
-res.type("text/plain").send("Connexion réussie.");
-         } else {
-      res.send("Échec de la connexion.");
+  if (typeof username !== "string" || typeof password !== "string") {
+    return res.status(400).type("text/plain").send("Identifiants invalides.");
+  }
+
+  const query = "SELECT * FROM users WHERE username = ? AND password = ?";
+
+  db.get(query, [username, password], (err, row) => {
+    if (err) {
+      return res.status(500).type("text/plain").send("Erreur interne.");
     }
+
+    if (row) {
+      return res.type("text/plain").send("Connexion réussie.");
+    }
+
+    return res.status(401).type("text/plain").send("Échec de la connexion.");
   });
 });
-
 // FAILLE 3 : Cross-Site Scripting (XSS)
 app.get('/search', (req, res) => {
   const q = req.query.q;
